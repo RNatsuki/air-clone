@@ -33,6 +33,8 @@ export function setupSocket(server: any) {
           hostname: device.hostname,
           firmware: device.firmware,
           lastSeenAgo,
+          ssid: device.ssid,
+          signalStrength: device.signal,
           online,
         };
       });
