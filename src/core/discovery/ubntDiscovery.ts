@@ -40,7 +40,8 @@ function parseTLVs(payload: Buffer, remoteIp: string) {
   if (payload.length < 4) return data;
 
   // Validate UBNT discovery reply signature 01 00 00
-  if (payload[0] !== 0x01 || payload[1] !== 0x00 || payload[2] !== 0x00) return data;
+  if (payload[0] !== 0x01 || payload[1] !== 0x00 || payload[2] !== 0x00)
+    return data;
 
   let pointer = 3; // The 4th byte is remaining length
   let remaining = payload[pointer];
@@ -96,7 +97,6 @@ function parseTLVs(payload: Buffer, remoteIp: string) {
         break;
     }
   }
-  logger.info(`Parsed TLVs: ${JSON.stringify(data)}`);
   return data;
 }
 
@@ -106,11 +106,17 @@ export function startDiscovery(intervalMs = 30000) {
   socket.on("listening", () => {
     socket.setBroadcast(true);
     const address = socket.address();
-    logger.info(`Discovery socket listening on ${address.address}:${address.port} and broadcast enabled`);
+    logger.info(
+      `Discovery socket listening on ${address.address}:${address.port} and broadcast enabled`
+    );
   });
 
   socket.on("message", (msg, rinfo) => {
-    logger.info(`Received ${msg.length} bytes from ${rinfo.address}:${rinfo.port}: ${msg.toString("hex")}`);
+    logger.info(
+      `Received ${msg.length} bytes from ${rinfo.address}:${
+        rinfo.port
+      }: ${msg.toString("hex")}`
+    );
 
     const data = parseTLVs(msg, rinfo.address);
     if (!data.mac) {
@@ -123,7 +129,7 @@ export function startDiscovery(intervalMs = 30000) {
 
     devicesCache.set(data.mac, {
       mac: data.mac,
-      ip:  rinfo.address,
+      ip: rinfo.address,
       hostname: data.hostname || prev?.hostname,
       model: data.model || prev?.model,
       ssid: data.ssid || prev?.ssid,
@@ -167,5 +173,14 @@ export function startDiscovery(intervalMs = 30000) {
       socket.close();
     },
     getDiscoveredDevices: () => Array.from(devicesCache.values()),
+    scanNow: () => {
+      return new Promise<DiscoveredDevice[]>((resolve) => {
+        devicesCache.clear();
+        broadcast();
+        setTimeout(() => {
+          resolve(Array.from(devicesCache.values()));
+        }, 5000); // Wait for 5 seconds to collect responses
+      });
+    }
   };
 }

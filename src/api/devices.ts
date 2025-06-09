@@ -11,8 +11,9 @@ const router = express.Router();
 
 const discovery = startDiscovery();
 
-router.get("/discovered", (req, res) => {
-  res.json(discovery.getDiscoveredDevices );
+router.get("/discovered", async (req, res) => {
+    const devices = await discovery.scanNow();
+    res.json(devices);
 });
 
 router.post("/accept", async (req, res) => {
