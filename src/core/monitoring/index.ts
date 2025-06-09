@@ -9,7 +9,6 @@ import * as hostname from "./metrics/hostname";
 import { logger } from "../../lib/logger";
 import { Socket } from "socket.io";
 import pLimit from "p-limit";
-import { addMetricToBatch } from "./metricEmmiter";
 import { updateMetric } from "./metricStore";
 
 

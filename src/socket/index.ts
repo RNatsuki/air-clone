@@ -1,7 +1,6 @@
 import { Server as IOServer, Socket } from "socket.io";
 import { pollDeviceMetrics } from "../core/monitoring/";
 import { getDevices } from "../core/devices/deviceService";
-import { startMetricEmitter } from "../core/monitoring/metricEmmiter";
 import { getAllMetrics } from "../core/monitoring/metricStore";
 
 import { logger } from "../lib/logger";
