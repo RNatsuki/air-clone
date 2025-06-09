@@ -1,31 +1,40 @@
 import { Server as IOServer, Socket } from "socket.io";
-import { pollDeviceMetrics } from "../core/monitoring/";
-import { getDevices } from "../core/devices/deviceService";
-import { getAllMetrics } from "../core/monitoring/metricStore";
-
 import { logger } from "../lib/logger";
 import { prisma } from "../db/client";
 
+let io: IOServer | null = null;
+let metricsEmitterInterval: NodeJS.Timeout | null = null;
+
 export function setupSocket(server: any) {
-  const io = new IOServer(server, {
+  if (io) return; // evitar reinicialización si ya está activo
+
+  io = new IOServer(server, {
     cors: {
       origin: "*",
     },
   });
 
-  io.on("connection", async (socket: Socket) => {
-    logger.info("Client connected to socket.io");
+  io.on("connection", (socket: Socket) => {
+    logger.info(`Client connected: ${socket.id}`);
 
-    // Emitir métricas enriquecidas cada 1 segundo
-    setInterval(async () => {
+    socket.on("disconnect", () => {
+      logger.info(`Client disconnected: ${socket.id}`);
+    });
+  });
+
+  startMetricsEmitter();
+}
+
+function startMetricsEmitter() {
+  if (metricsEmitterInterval) return; // evitar múltiples emisores
+
+  metricsEmitterInterval = setInterval(async () => {
+    try {
       const devices = await prisma.device.findMany();
       const now = Math.floor(Date.now() / 1000);
 
       const payload = devices.map((device) => {
-        const lastSeen = device.lastSeen ?? 0;
-        const lastSeenAgo = now - lastSeen;
-        const online = lastSeenAgo < 35;
-
+        const lastSeenAgo = now - (device.lastSeen ?? 0);
         return {
           mac: device.mac,
           ip: device.ip,
@@ -35,25 +44,15 @@ export function setupSocket(server: any) {
           lastSeenAgo,
           ssid: device.ssid,
           signalStrength: device.signal,
-          online,
+          online: lastSeenAgo < 35,
         };
       });
 
-      socket.emit("metrics", payload);
-    }, 1000);
-
-    const devices = await getDevices();
-
-    for (const device of devices) {
-      pollDeviceMetrics(device as any);
-
-      setInterval(() => {
-        pollDeviceMetrics(device as any);
-      }, 30000); // Poll metrics every second
+      if (io) {
+        io.emit("metrics", payload);
+      }
+    } catch (error: any) {
+      logger.error(`Error emitting metrics: ${error.message}`);
     }
-
-    socket.on("disconnect", () => {
-      logger.info("Client disconnected from socket.io");
-    });
-  });
+  }, 1000); // Emitir cada segundo
 }
