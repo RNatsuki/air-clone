@@ -10,6 +10,7 @@ import { logger } from "../../lib/logger";
 import { Socket } from "socket.io";
 import pLimit from "p-limit";
 import { addMetricToBatch } from "./metricEmmiter";
+import { updateMetric } from "./metricStore";
 
 
 
@@ -76,9 +77,7 @@ export async function pollDeviceMetrics(
         },
       });
 
-      if (socket) {
-        addMetricToBatch(device.mac, metric);
-      }
+      updateMetric(device.mac, metric);
     } catch (error) {
       logger.error(
         `Error polling metrics for ${device.mac}: ${(error as Error).message}`

@@ -1,7 +1,8 @@
 import { Server as IOServer, Socket } from "socket.io";
 import { pollDeviceMetrics } from "../core/monitoring/";
 import { getDevices } from "../core/devices/deviceService";
-import { startMetricEmitter, stopMetricEmitter } from "../core/monitoring/metricEmmiter";
+import { startMetricEmitter } from "../core/monitoring/metricEmmiter";
+import { getAllMetrics } from "../core/monitoring/metricStore";
 
 import { logger } from "../lib/logger";
 
@@ -15,16 +16,20 @@ export function setupSocket(server: any) {
   io.on("connection", async (socket: Socket) => {
     logger.info("Client connected to socket.io");
 
-    startMetricEmitter(socket);
-
+    //emitir metricas cada 1 segundo
+    const interval = setInterval(() => {
+      const metrics = getAllMetrics();
+      socket.emit("metrics", metrics);
+    }, 1000); // Emit metrics every second
 
     const devices = await getDevices();
-    logger.info(`Discovered devices: ${JSON.stringify(devices)}`);
+
     for (const device of devices) {
-      //Realiza el monireo inmediato
-      pollDeviceMetrics(device as any, socket);
-      //Configura el polling cada 30 segundos
-      setInterval(() => pollDeviceMetrics(device as any, socket), 30000);
+      pollDeviceMetrics(device as any);
+
+      setInterval(() => {
+        pollDeviceMetrics(device as any);
+      }, 30000); // Poll metrics every second
     }
 
     socket.on("disconnect", () => {
