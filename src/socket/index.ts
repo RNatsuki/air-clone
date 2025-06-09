@@ -14,7 +14,7 @@ export function setupSocket(server: any) {
     logger.info("Client connected to socket.io");
 
     const devices = await getDevices();
-
+    logger.info(`Discovered devices: ${JSON.stringify(devices)}`);
     for (const device of devices) {
       pollDeviceMetrics(device as any, socket);
 

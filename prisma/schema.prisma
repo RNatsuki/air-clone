@@ -17,17 +17,9 @@ model Device {
   sshUsername String
   sshPassword String
   lastSeen    DateTime @updatedAt
-  metrics     Metric[]
+  cpu         Float?
+  memory      Float?
+  uptime      Int?     // segundos
+  signal      Int?     // dBm
 }
 
-model Metric {
-  id        Int      @id @default(autoincrement())
-  deviceMac String
-  cpu       Float?
-  memory    Float?
-  uptime    Int?     // segundos
-
-  createdAt DateTime @default(now())
-
-  device    Device   @relation(fields: [deviceMac], references: [mac], onDelete: Cascade)
-}

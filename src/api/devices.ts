@@ -11,10 +11,16 @@ const router = express.Router();
 
 const discovery = startDiscovery();
 
-router.get("/discovered", async (req, res) => {
+router.get("/discovery", async (req, res) => {
     const devices = await discovery.scanNow();
     res.json(devices);
 });
+
+router.get("/discovered", (req, res) => {
+  const devices = discovery.getDiscoveredDevices();
+  res.json(devices);
+});
+
 
 router.post("/accept", async (req, res) => {
   const { mac, sshUsername, sshPassword } = req.body;

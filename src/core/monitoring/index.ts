@@ -1,8 +1,28 @@
 import { prisma } from "../../db/client";
 import { connectSSH } from "./poller";
 import * as cpu from "./metrics/cpu";
+import * as signal from "./metrics/signal"
+import * as uptime from "./metrics/uptime";
+import * as ssid from "./metrics/ssid";
+import * as ip from "./metrics/ip";
+import * as hostname from "./metrics/hostname";
 import { logger } from "../../lib/logger";
 import { Socket } from "socket.io";
+
+
+const metricBatch: {deviceMac: string, metric: any}[] = [];
+let batchTimer: NodeJS.Timeout | null = null;
+const BATCH_INTERVAL = 5000; // 5 seconds
+
+
+function sendMetricsBatch(socket: Socket) {
+  if (metricBatch.length === 0) return;
+
+  const batch = [...metricBatch];
+  metricBatch.length = 0; // Clear the batch
+
+  socket.emit("metrics_batch", batch);
+}
 
 export async function pollDeviceMetrics(
   device: {
@@ -25,19 +45,47 @@ export async function pollDeviceMetrics(
 
   try {
     const cpuMetrics = await cpu.pollCPU(conn);
+    const signalMetrics = await signal.pollSignal(conn);
+    const uptimeMetrics = await uptime.pollUptime(conn);
+    const ssidMetrics = await ssid.pollSSID(conn);
+    const ipMetrics = await ip.pollIp(conn);
+    const hostnameMetrics = await hostname.pollHostname(conn);
+
+    const metrics = {
+      cpu: cpuMetrics.cpu,
+      signal: signalMetrics.signal,
+      uptime: uptimeMetrics.uptime,
+      ssid: ssidMetrics.ssid,
+      ip: ipMetrics.ip,
+      hostname: hostnameMetrics.hostname,
+    };
+
 
     //Guardar metricas en DB
-    const metric = await prisma.metric.create({
-      data: {
-        deviceMac: device.mac,
-        cpu: cpuMetrics.cpu,
+    const metric = await prisma.device.update({
+      where: { mac: device.mac },
+      data: metrics,
+      select: {
+        mac: false,
+        cpu: true,
+        memory: true,
+        uptime: true,
+        signal: true,
+        ssid: true,
+        ip: true,
+        hostname: true,
       },
     });
 
-    // Emitir evento a través del socket si está disponible
-    if (socket) {
-      socket.emit("metrics", { deviceMac: device.mac, metric });
+   if(socket){
+    metricBatch.push({deviceMac: device.mac, metric});
+    if(!batchTimer && socket){
+      batchTimer = setTimeout(() => {
+        sendMetricsBatch(socket);
+        batchTimer = null;
+      }, BATCH_INTERVAL);
     }
+   }
   } catch (error) {
     logger.error(
       `Error polling metrics for ${device.mac}: ${(error as Error).message}`
@@ -45,4 +93,12 @@ export async function pollDeviceMetrics(
   } finally {
     conn.end();
   }
+}
+
+export function flushMetricsBatch(socket: Socket) {
+  if (batchTimer) {
+    clearTimeout(batchTimer);
+    batchTimer = null;
+  }
+  sendMetricsBatch(socket);
 }
