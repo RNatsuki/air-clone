@@ -12,7 +12,7 @@ export async function saveDevice(discovered: DiscoveredDevice, sshUsername: stri
             firmware: discovered.firmware,
             sshUsername,
             sshPassword,
-            lastSeen: new Date(),
+            lastSeen: Math.floor(Date.now() / 1000),
         },
         create: {
             mac: discovered.mac!,
@@ -23,7 +23,7 @@ export async function saveDevice(discovered: DiscoveredDevice, sshUsername: stri
             firmware: discovered.firmware,
             sshUsername,
             sshPassword,
-            lastSeen: new Date(),
+            lastSeen: Math.floor(Date.now() / 1000),
         },
     })
 }
@@ -33,7 +33,7 @@ export async function updateDevice(mac: string, updateData: Partial<Omit<Discove
         where: {mac},
         data: {
             ...updateData,
-            lastSeen: new Date(),
+            lastSeen: Math.floor(Date.now() / 1000),
         }
     })
 }

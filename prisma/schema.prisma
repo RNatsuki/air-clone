@@ -16,10 +16,9 @@ model Device {
   firmware    String?
   sshUsername String
   sshPassword String
-  lastSeen    DateTime @updatedAt
+  lastSeen    Int? // timestamp in seconds
   cpu         Float?
   memory      Float?
-  uptime      Int?     // segundos
-  signal      Int?     // dBm
+  uptime      Int? // segundos
+  signal      Int? // dBm
 }
-

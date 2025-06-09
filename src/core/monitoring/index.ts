@@ -58,12 +58,13 @@ export async function pollDeviceMetrics(
         ssid: ssidMetrics.ssid,
         ip: ipMetrics.ip,
         hostname: hostnameMetrics.hostname,
+        lastSeen: Math.floor(Date.now() / 1000),
       };
 
-      //Guardar metricas en DB
+      //Guardar métricas en DB
       const metric = await prisma.device.update({
         where: { mac: device.mac },
-        data: metrics,
+        data: metrics ,
         select: {
           mac: false,
           cpu: true,
@@ -73,6 +74,7 @@ export async function pollDeviceMetrics(
           ssid: true,
           ip: true,
           hostname: true,
+          lastSeen: true,
         },
       });
 

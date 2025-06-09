@@ -4,6 +4,7 @@ import { getDevices } from "../core/devices/deviceService";
 import { getAllMetrics } from "../core/monitoring/metricStore";
 
 import { logger } from "../lib/logger";
+import { prisma } from "../db/client";
 
 export function setupSocket(server: any) {
   const io = new IOServer(server, {
@@ -15,11 +16,29 @@ export function setupSocket(server: any) {
   io.on("connection", async (socket: Socket) => {
     logger.info("Client connected to socket.io");
 
-    //emitir metricas cada 1 segundo
-    const interval = setInterval(() => {
-      const metrics = getAllMetrics();
-      socket.emit("metrics", metrics);
-    }, 1000); // Emit metrics every second
+    // Emitir métricas enriquecidas cada 1 segundo
+    setInterval(async () => {
+      const devices = await prisma.device.findMany();
+      const now = Math.floor(Date.now() / 1000);
+
+      const payload = devices.map((device) => {
+        const lastSeen = device.lastSeen ?? 0;
+        const lastSeenAgo = now - lastSeen;
+        const online = lastSeenAgo < 35;
+
+        return {
+          mac: device.mac,
+          ip: device.ip,
+          model: device.model,
+          hostname: device.hostname,
+          firmware: device.firmware,
+          lastSeenAgo,
+          online,
+        };
+      });
+
+      socket.emit("metrics", payload);
+    }, 1000);
 
     const devices = await getDevices();
 
