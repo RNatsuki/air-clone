@@ -1,0 +1,29 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node src/app.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^6.9.0",
+    "dgram": "^1.0.1",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "prisma": "^6.9.0",
+    "socket.io": "^4.8.1",
+    "ssh2": "^1.16.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.15.30",
+    "@types/socket.io": "^3.0.1",
+    "@types/ssh2": "^1.15.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

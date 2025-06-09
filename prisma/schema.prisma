@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Device {
+  mac         String  @id
+  ip          String?
+  hostname    String?
+  model       String?
+  ssid        String?
+  firmware    String?
+  sshUsername String
+  sshPassword String
+  lastSeen    DateTime @updatedAt
+  metrics     Metric[]
+}
+
+model Metric {
+  id        Int      @id @default(autoincrement())
+  deviceMac String
+  cpu       Float?
+  memory    Float?
+  uptime    Int?     // segundos
+
+  createdAt DateTime @default(now())
+
+  device    Device   @relation(fields: [deviceMac], references: [mac], onDelete: Cascade)
+}
