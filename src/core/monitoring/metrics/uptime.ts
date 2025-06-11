@@ -2,12 +2,12 @@ import { Client } from "ssh2";
 import { execCommand } from "../poller";
 
 
-function parseUptime(uptime: string): number {
-    return Math.floor(parseFloat(uptime));
-  }
 
-export async function pollUptime(conn: Client): Promise<{ uptime: number }> {
-    const output = await execCommand(conn, `cut -d ' ' -f1 /proc/uptime`);
-    const uptimeValue = parseUptime(output);
-    return { uptime: uptimeValue };
+export async function pollUptime(data: string): Promise<{ uptime: number }> {
+    const uptimeData = data.split("\n").find(line => line.startsWith("uptime="));
+    if (uptimeData) {
+        const uptimeValue = parseFloat(uptimeData.split("=")[1]);
+        return { uptime: Math.floor(uptimeValue) };
+    }
+    return { uptime: 0 };
 }
