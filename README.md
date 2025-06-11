@@ -202,3 +202,38 @@ src/
 ## Licencia
 
 ISC
+
+## Frontend
+
+This project now includes a Next.js frontend located in the `frontend` directory.
+
+### Running the Frontend
+
+1.  **Navigate to the project root directory.**
+2.  **Install dependencies (if you haven't already):**
+    ```bash
+    npm install
+    ```
+3.  **Run the development server:**
+    ```bash
+    npm run next:dev
+    ```
+    This will typically start the frontend on [http://localhost:3000](http://localhost:3000) or the next available port.
+
+### Building the Frontend
+
+To create a production build:
+
+```bash
+npm run next:build
+```
+This will generate an optimized build in the `frontend/.next` directory.
+
+### Starting the Production Frontend
+
+After building, you can start the production server:
+
+```bash
+npm run next:start
+```
+This will serve the optimized build.

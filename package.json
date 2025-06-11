@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/app.ts"
+    "start": "ts-node src/app.ts",
+    "next:dev": "next dev frontend -p 3001",
+    "next:build": "next build frontend",
+    "next:start": "next start frontend"
   },
   "keywords": [],
   "author": "",
@@ -11,11 +14,16 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.9.0",
+    "@types/react": "^19.1.7",
+    "@types/react-dom": "^19.1.6",
     "dgram": "^1.0.1",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "next": "^15.3.3",
     "p-limit": "^6.2.0",
     "prisma": "^6.9.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "socket.io": "^4.8.1",
     "ssh2": "^1.16.0"
   },
@@ -24,6 +32,9 @@
     "@types/node": "^22.15.30",
     "@types/socket.io": "^3.0.1",
     "@types/ssh2": "^1.15.5",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^4.1.8",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
