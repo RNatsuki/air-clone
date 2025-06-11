@@ -2,13 +2,13 @@ import { Client } from "ssh2";
 import { execCommand } from "../poller";
 
 
-function parseSignalStrength(signal: string): number {
-    const match = /Signal level=(-?\d+) dBm/.exec(signal);
-    return match ? parseInt(match[1], 10) : 0;
-  }
 
-export async function pollSignal(conn: Client): Promise<{ signal: number }> {
-    const output = await execCommand(conn, `iwconfig 2>/dev/null | grep -i "signal level\\|quality" || echo "No iwconfig data"`);
-    const signalStrength = parseSignalStrength(output);
-    return { signal: signalStrength };
+
+export async function pollSignal(data: string): Promise<{ signal: number }> {
+    const signalData = data.split("\n").find(line => line.startsWith("signal="));
+    if (signalData) {
+        const signalStrength = parseFloat(signalData.split("=")[1]);
+        return { signal: Math.round(signalStrength) };
+    }
+    return { signal: 0 };
 }

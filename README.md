@@ -1,7 +1,6 @@
 # Sistema de Monitoreo de Dispositivos
 
-Este proyecto es un sistema de monitoreo de dispositivos de red que recopila y muestra métricas como CPU, tiempo de actividad, señal y otros datos relevantes de dispositivos conectados.
-
+Este proyecto trata de replicar el sistema de monitoreo AirControl2 de Ubiquiti, permitiendo la gestión y monitoreo de dispositivos (LiteBeam, Rocket, etc.) en una red local. Utiliza Node.js con Express para el backend, Prisma para la base de datos y Socket.IO para las actualizaciones en tiempo real.
 ## Características
 
 - Monitoreo de dispositivos en tiempo real

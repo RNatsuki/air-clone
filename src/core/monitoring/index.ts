@@ -10,6 +10,7 @@ import { logger } from "../../lib/logger";
 import { Socket } from "socket.io";
 import pLimit from "p-limit";
 import { updateMetric } from "./metricStore";
+import { execCommand } from "./poller";
 
 
 
@@ -23,6 +24,7 @@ export async function pollDeviceMetrics(
   device: {
     mac: string;
     ip: string;
+    hostname: string;
     sshUsername: string;
     sshPassword: string;
   },
@@ -38,16 +40,21 @@ export async function pollDeviceMetrics(
       );
     } catch (e) {
       logger.error(
-        `SSH connection failed for ${device.mac}: ${(e as Error).message}`
+        `SSH connection failed for ${device.mac} (${device.ip}): ${(e as Error).message}`
       );
       return;
     }
 
+    // Execute command to get someone metrics and pass output to the respective metric functions for parsing
+    const output = await execCommand(conn, `mca-status`)
+
     try {
-      const cpuMetrics = await cpu.pollCPU(conn);
-      const signalMetrics = await signal.pollSignal(conn);
-      const uptimeMetrics = await uptime.pollUptime(conn);
-      const ssidMetrics = await ssid.pollSSID(conn);
+      const cpuMetrics = await cpu.pollCPU(output);
+      const signalMetrics = await signal.pollSignal(output);
+      const uptimeMetrics = await uptime.pollUptime(output);
+      const ssidMetrics = await ssid.pollSSID(output);
+
+      //This metrics are not available in mca-status, so we poll them separately
       const ipMetrics = await ip.pollIp(conn);
       const hostnameMetrics = await hostname.pollHostname(conn);
 
