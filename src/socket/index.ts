@@ -56,3 +56,10 @@ function startMetricsEmitter() {
     }
   }, 1000); // Emitir cada segundo
 }
+
+export function emitDeviceStatus(mac: string, online: boolean) {
+  if (!io) return;
+
+  io.emit("deviceStatus", { mac, online });
+  logger.info(`Device status emitted: ${mac} is ${online ? "online" : "offline"}`);
+}
