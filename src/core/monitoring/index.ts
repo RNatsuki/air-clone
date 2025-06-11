@@ -24,6 +24,7 @@ export async function pollDeviceMetrics(
   device: {
     mac: string;
     ip: string;
+    hostname: string;
     sshUsername: string;
     sshPassword: string;
   },
@@ -39,7 +40,7 @@ export async function pollDeviceMetrics(
       );
     } catch (e) {
       logger.error(
-        `SSH connection failed for ${device.mac}: ${(e as Error).message}`
+        `SSH connection failed for ${device.mac} (${device.ip}): ${(e as Error).message}`
       );
       return;
     }
