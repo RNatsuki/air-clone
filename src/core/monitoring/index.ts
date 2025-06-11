@@ -45,7 +45,7 @@ export async function pollDeviceMetrics(
       return;
     }
 
-    // Execute command to get all metrics and pass output to the respective metric functions for parsing
+    // Execute command to get someone metrics and pass output to the respective metric functions for parsing
     const output = await execCommand(conn, `mca-status`)
 
     try {
@@ -53,6 +53,8 @@ export async function pollDeviceMetrics(
       const signalMetrics = await signal.pollSignal(output);
       const uptimeMetrics = await uptime.pollUptime(output);
       const ssidMetrics = await ssid.pollSSID(output);
+
+      //This metrics are not available in mca-status, so we poll them separately
       const ipMetrics = await ip.pollIp(conn);
       const hostnameMetrics = await hostname.pollHostname(conn);
 
